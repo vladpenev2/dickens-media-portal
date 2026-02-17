@@ -17,7 +17,8 @@ import {
   CalendarDays,
   ArrowRight,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -29,6 +30,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+// ---------------------------------------------------------------------------
+// Channel funnel stats (aggregate)
+// ---------------------------------------------------------------------------
+
+const coldCallingStats = {
+  totalDials: 22051,
+  connects: 1995,
+  conversations: 479,
+  meetingsBooked: 82,
+  avgDialsPerDay: 373.8,
+  totalTalkTime: "7,308 min",
+  campaigns: 2,
+};
+
+const coldEmailStats = {
+  totalSent: 5995,
+  replies: 170,
+  positiveReplies: 94,
+  meetingsBooked: 24,
+  replyRate: 2.84,
+  campaigns: 1,
+};
+
+function pct(a: number, b: number) {
+  if (b === 0) return "0";
+  return ((a / b) * 100).toFixed(1);
+}
 
 // ---------------------------------------------------------------------------
 // Mock Data
@@ -265,7 +294,12 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1.5">
-            <CardTitle className="text-lg">
+            <CardTitle className="text-lg flex items-center gap-2">
+              {campaign.channel === "cold-calling" ? (
+                <Phone className="h-5 w-5 text-muted-foreground shrink-0" />
+              ) : (
+                <Mail className="h-5 w-5 text-muted-foreground shrink-0" />
+              )}
               {campaign.name}
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -502,6 +536,89 @@ export default function CampaignsPage() {
           <CardContent className="p-5">
             <p className="text-muted-foreground text-sm font-medium mb-1">Behind</p>
             <p className="text-3xl font-bold text-red-600">{behindCount}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Channel Performance Funnels */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Cold Calling */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-lg">Cold Calling</CardTitle>
+              </div>
+              <Badge variant="outline" className="text-xs">{coldCallingStats.campaigns} campaigns</Badge>
+            </div>
+            <CardDescription>Conversion funnel this quarter</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <span className="font-semibold">{coldCallingStats.totalDials.toLocaleString()} dials</span>
+              <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>{coldCallingStats.connects.toLocaleString()} connects ({pct(coldCallingStats.connects, coldCallingStats.totalDials)}%)</span>
+              <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>{coldCallingStats.conversations} convos ({pct(coldCallingStats.conversations, coldCallingStats.connects)}%)</span>
+              <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="font-semibold">{coldCallingStats.meetingsBooked} meetings ({pct(coldCallingStats.meetingsBooked, coldCallingStats.conversations)}%)</span>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Avg Dials/Day</p>
+                <p className="text-lg font-bold">{coldCallingStats.avgDialsPerDay}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Connect Rate</p>
+                <p className="text-lg font-bold">{pct(coldCallingStats.connects, coldCallingStats.totalDials)}%</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Talk Time</p>
+                <p className="text-lg font-bold">{coldCallingStats.totalTalkTime}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cold Email */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-lg">Cold Email</CardTitle>
+              </div>
+              <Badge variant="outline" className="text-xs">{coldEmailStats.campaigns} campaign</Badge>
+            </div>
+            <CardDescription>Conversion funnel this quarter</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <span className="font-semibold">{coldEmailStats.totalSent.toLocaleString()} sent</span>
+              <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>{coldEmailStats.replies} replies ({coldEmailStats.replyRate}%)</span>
+              <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>{coldEmailStats.positiveReplies} positive ({pct(coldEmailStats.positiveReplies, coldEmailStats.replies)}%)</span>
+              <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="font-semibold">{coldEmailStats.meetingsBooked} meetings ({pct(coldEmailStats.meetingsBooked, coldEmailStats.positiveReplies)}%)</span>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Reply Rate</p>
+                <p className="text-lg font-bold">{coldEmailStats.replyRate}%</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Positive Rate</p>
+                <p className="text-lg font-bold">{pct(coldEmailStats.positiveReplies, coldEmailStats.replies)}%</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Meetings</p>
+                <p className="text-lg font-bold">{coldEmailStats.meetingsBooked}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
